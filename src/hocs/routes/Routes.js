@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 import { AnimatePresence } from 'framer-motion';
 import Error404 from 'containers/errors/Error404';
 import Home from 'containers/pages/Home';
+import Blog from 'containers/pages/blog/blog';
 
 function AppRoutes(){
 
@@ -16,7 +17,7 @@ function AppRoutes(){
 
                     {/* Home Display */}
                     <Route path="/" element={<Home />} />
-                   
+                    <Route path="/blog" element={<Blog/>} />
                 </Routes>
         </AnimatePresence>
     )
