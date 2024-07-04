@@ -7,13 +7,9 @@ import {
     UsersIcon,
   } from '@heroicons/react/24/outline'
 import { RssIcon } from '@heroicons/react/24/solid';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
-const navigation = [
-    { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-    { name: 'Blog', href: '#', icon: RssIcon, current: false },
-  
-  ]
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -21,12 +17,22 @@ function classNames(...classes) {
 }
 
 function Sidebar (){
+
+    const location = useLocation()
+
+
+    const navigation = [
+      { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, current: location.pathname === '/dashboard' ? true : false },
+      { name: 'Blog', href: '/blog', icon: RssIcon, current: location.pathname === '/blog' ? true : false },
+    
+    ]
+
     return (
         <div>
             {navigation.map((item) => (
                   <NavLink
                     key={item.name}
-                    href={item.href}
+                    to={item.href}
                     className={classNames(
                       item.current ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
                       'group flex items-center px-2 py-2 text-sm font-medium rounded-md'

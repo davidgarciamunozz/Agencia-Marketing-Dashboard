@@ -2,12 +2,12 @@ import Layout from "hocs/layout/Layout";
 import { connect } from "react-redux";
 import { LockClosedIcon } from '@heroicons/react/20/solid'
 import { useEffect, useState } from "react";
-import { check_authenticated, load_user, login, refresh } from "redux/actions/auth/auth";
-import { Link, Navigate } from "react-router-dom";
+import { check_authenticated, load_user, login, refresh, reset_password_confirm } from "redux/actions/auth/auth";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
-function Home (
+function ResetPasswordConfirm (
     {
-        login,
+        reset_password_confirm,
         isAuthenticated,
         loading,
         refresh,
@@ -15,6 +15,11 @@ function Home (
         load_user,
     }
 ) {
+
+    const params = useParams()
+    const uid = params.uid
+    const token = params.token
+
     useEffect(()=>{
       isAuthenticated ? <></>:
       <>
@@ -25,17 +30,20 @@ function Home (
     },[])  
 
     const [formData, setFormData] = useState({
-        email: '',
-        password: ''
+        new_pasword: '',
+        re_new_password: ''
     });
 
-    const { email, password } = formData;
+    const { new_pasword,re_new_password } = formData;
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
+    const navigate = useNavigate();
+
     const onSubmit = e => {
         e.preventDefault();
-        login(email, password)
+        reset_password_confirm(uid, token, new_pasword, re_new_password);
+        navigate ('/')
     }
 
     if(isAuthenticated){
@@ -57,17 +65,16 @@ function Home (
               <div className="-space-y-px rounded-md shadow-sm">
                 <div>
                   <label htmlFor="email-address" className="sr-only">
-                    Email address
+                    New Password
                   </label>
                   <input
-                    id="email-address"
-                    name="email"
-                    value={email}
+                    name="new_pasword"
+                    value={new_pasword}
                     onChange={e => onChange(e)}
-                    type="email"
+                    type="password"
                     required
                     className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Email address"
+                    placeholder="New Password"
                   />
                 </div>
                 <div>
@@ -75,14 +82,13 @@ function Home (
                     Password
                   </label>
                   <input
-                    id="password"
-                    name="password"
-                    value={password}
+                    name="re_new_password"
+                    value={re_new_password}
                     onChange={e => onChange(e)}
                     type="password"
                     required
                     className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Password"
+                    placeholder="Confirm New Password"
                   />
                 </div>
               </div>
@@ -104,7 +110,7 @@ function Home (
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3">
                     <LockClosedIcon className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400" aria-hidden="true" />
                   </span>
-                  Sign in
+                  Change Password
                 </button>
               </div>
             </form>
@@ -121,8 +127,8 @@ const mapStateToProps = state => ({
     });
 
 export default connect (mapStateToProps,{
-    login,
+    reset_password_confirm,
     refresh,
     check_authenticated,
     load_user,
-}) (Home);
+}) (ResetPasswordConfirm);

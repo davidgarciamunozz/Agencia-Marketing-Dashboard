@@ -1,26 +1,51 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { connect } from "react-redux";
 import {motion} from "framer-motion";
 import {
     Bars3Icon,
     XMarkIcon,
+    CheckIcon,
 } from "@heroicons/react/24/solid";
 
 import Sidebar from "components/navigation/Sidebar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { check_authenticated, load_user, logout, refresh } from "redux/actions/auth/auth";
 
-function Layout ({children}) {
+function Layout ({
+    children,
+    check_authenticated,
+    refresh,
+    load_user,
+    user_loading,
+    isAuthenticated,
+    user,
+    logout
+}) {
+
+    useEffect(()=>{
+      check_authenticated()
+      refresh()
+      load_user()
+    },[])  
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [open, setOpen] = useState(false)
+
+    const navigate = useNavigate()
+
+    const handleLogout = () => {
+      logout()
+      navigate('/')
+    }
 
     return (
        <>
-        <motion.div
+        {/* <motion.div
         initial={{opacity:0, transition: {duration:0.5}}}
         animate={{opacity:1, transition: {duration:0.5}}}
         exit={{opacity:0, transition: {duration:0.5}}}
-        >
+        > */}
             <div>
         <Transition.Root show={sidebarOpen} as={Fragment}>
           <Dialog as="div" className="relative z-40 md:hidden" onClose={setSidebarOpen}>
@@ -82,7 +107,7 @@ function Layout ({children}) {
                     </nav>
                   </div>
                   <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
-                    <a href="#" className="group block flex-shrink-0">
+                    <button onClick={e=>setOpen(true)} className="group block flex-shrink-0">
                       <div className="flex items-center">
                         <div>
                           <img
@@ -96,7 +121,7 @@ function Layout ({children}) {
                           <p className="text-sm font-medium text-gray-500 group-hover:text-gray-700">View profile</p>
                         </div>
                       </div>
-                    </a>
+                    </button>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
@@ -124,7 +149,7 @@ function Layout ({children}) {
               </nav>
             </div>
             <div className="flex flex-shrink-0 border-t border-gray-200 p-4">
-              <a href="#" className="group block w-full flex-shrink-0">
+              <button onClick={e=>setOpen(true)} className="group block w-full flex-shrink-0">
                 <div className="flex items-center">
                   <div>
                     <img
@@ -138,7 +163,7 @@ function Layout ({children}) {
                     <p className="text-xs font-medium text-gray-500 group-hover:text-gray-700">View profile</p>
                   </div>
                 </div>
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -163,14 +188,78 @@ function Layout ({children}) {
             </div>
           </main>
         </div>
-      </div>
-        </motion.div>
+           </div>
+           <Transition.Root show={open} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={setOpen}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 z-10 overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+                <div>
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                    <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-5">
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      Payment successful
+                    </Dialog.Title>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequatur amet labore.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 sm:mt-6">
+                  <button
+                    type="button"
+                    className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
+                    onClick={() => handleLogout()}
+                  >
+                    Logout
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+          </Transition.Root>
+        {/* </motion.div> */}
        </>
     );
 }
 
 const mapStateToProps = state => ({
+ user_loading: state.auth.user_loading,
+ isAuthenticated: state.auth.isAuthenticated,
+ user: state.auth.user
 
 });
 
-export default connect(mapStateToProps,{})(Layout);
+export default connect(mapStateToProps,{
+    check_authenticated,
+    refresh,
+    load_user,
+    logout
+})(Layout);
