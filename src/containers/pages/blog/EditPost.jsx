@@ -3,15 +3,16 @@ import Layout from "hocs/layout/Layout";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { connect } from "react-redux";
-import { useParams } from "react-router-dom";
-import { get_author_blog_list, get_author_blog_list_page, get_blog } from "redux/actions/blog/blog";
+import { useNavigate, useParams } from "react-router-dom";
+import { get_author_blog_list, get_author_blog_list_page, get_blog, get_blog_by_new_slug } from "redux/actions/blog/blog";
 import { get_categories } from "redux/actions/categories/categories";
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 import axios from "axios";
 
 function EditPost ({
+    post,
     get_blog,
-    post
+    get_blog_by_new_slug,
 }) {
 
     const params = useParams()
@@ -20,24 +21,32 @@ function EditPost ({
     useEffect(()=>{
         window.scrollTo(0,0)
         get_blog(slug)
+        get_blog_by_new_slug(new_slug)
         get_categories()
 
     },[])
 
     //Crear una funcion para que al hacer click en uno de los botones de update, se imprima en consola un mensaje
     const [updateTitle, setUpdateTitle] = useState(false)
+    const [updateSlug, setUpdateSlug]=useState(false)
 
     const [formData, setFormData] = useState({
         title:'',
+        new_slug:'',
     })
 
-    const {title} = formData
+    const {
+        title,
+        new_slug
+    } = formData
 
     const onChange = (e) => {
         setFormData({...formData, [e.target.name]: e.target.value})
     }
 
     const [loading, setLoading] = useState(false)
+
+    const navigate = useNavigate()
 
 
     const onSubmit = (e) => {
@@ -46,6 +55,7 @@ function EditPost ({
         const config = {
             headers: {
                 'Accept': 'application/json',
+                'Content-Type': 'multipart/form-data',
                 'Authorization': `JWT ${localStorage.getItem('access')}`
             }
         };
@@ -53,6 +63,7 @@ function EditPost ({
         const formData = new FormData()
         formData.append('title', title)
         formData.append('slug', slug)
+        formData.append('new_slug', new_slug)
 
         const fetchData = async () => {
         setLoading(true)
@@ -64,7 +75,11 @@ function EditPost ({
                 if(res.status === 200){
                     setLoading(false)
                     setUpdateTitle(false)
-                    get_blog(slug)
+                    if(new_slug!==''){
+                        navigate(`/blog/${new_slug}`)
+                    } else {
+                        get_blog(slug)
+                    }
                 } else {
                     setLoading(false)
                     setUpdateTitle(false)
@@ -112,6 +127,9 @@ function EditPost ({
             
 
             {/* Edit post interface */}
+
+           
+
             <div className=" bg-white px-4 py-5 sm:px-6">
                 <div className="-ml-5 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
                     <div className="ml-4 mt-4">
@@ -143,10 +161,13 @@ function EditPost ({
                     </div>
                 </div>
             </div>
+
+            
       <div className="mt-5 border-t border-gray-200 px-5">
             <dl className="divide-y divide-gray-200">
+            {/* Cambiar el titulo del post */}    
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Post title</dt>
+                <dt className="text-sm font-medium text-gray-500">Title</dt>
                 <dd className="mt-1 flex justify-center items-center text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                     {
                         updateTitle ?
@@ -199,18 +220,60 @@ function EditPost ({
                     }
                 </dd>
             </div>
+
+            {/* Cambiar el slug del post */}            
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Application for</dt>
-                <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span className="flex-grow">Backend Developer</span>
-                <span className="ml-4 flex-shrink-0">
-                    <button
-                    type="button"
-                    className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                    Update
-                    </button>
-                </span>
+                <dt className="text-sm font-medium text-gray-500">Slug</dt>
+                <dd className="mt-1 flex justify-center items-center text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    {
+                        updateSlug ?
+                        <>
+                        <form onSubmit={e=>onSubmit(e)} className="flex w-full items-center">
+                        <span className="flex-grow">
+                                <input 
+                                value={new_slug} 
+                                onChange={e => onChange(e)}
+                                name="new_slug" 
+                                type="text" 
+                                className="w-full border border-gray-300 rounded-md" 
+                                required
+                                />
+                        </span>
+
+                        <div className="ml-4 flex flex-shrink-0 space-x-4">
+                                <button
+                                type="submit"
+                                className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Save
+                                </button>
+                                <span className="text-gray-300" aria-hidden="true">
+                                |
+                                </span>
+                                <div
+                                type="submit"
+                                onClick={()=>setUpdateSlug(false)}
+                                className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Cancel
+                                </div>
+                        </div>
+
+                        </form>
+                        </>
+                        :
+                        <>
+                        <span className="flex-grow">{post.slug}</span>
+                        <span className="ml-4 flex-shrink-0">
+                            <div
+                            onClick={()=>setUpdateSlug(true)}
+                            className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                            >
+                            Update
+                            </div>
+                        </span>
+                        </>
+                    }
                 </dd>
             </div>
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
@@ -332,5 +395,6 @@ const mapStateToProps = state => ({
 });
 
 export default connect (mapStateToProps,{
-    get_blog
+    get_blog,
+    get_blog_by_new_slug
 }) (EditPost)

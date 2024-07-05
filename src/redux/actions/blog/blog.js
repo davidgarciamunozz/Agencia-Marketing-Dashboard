@@ -205,6 +205,34 @@ export const get_blog = (slug) => async dispatch => {
     }
 }
 
+export const get_blog_by_new_slug = (new_slug) => async dispatch => {
+    const config = {
+        headers: {
+            'Accept': 'application/json'
+        }
+    };
+
+    try {
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/blog/detail/new/${new_slug}`, config)
+        if(res.status === 200){
+            dispatch({
+                type: GET_BLOG_SUCCESS,
+                payload: res.data
+            });
+        } else {
+            dispatch({
+                type: GET_BLOG_FAIL
+            });
+        }
+
+    }catch(err){
+        dispatch({
+            type: GET_BLOG_FAIL
+        })  
+    }
+
+}
+
 export const search_blog = (search_term) => async dispatch => {
     const config = {
         headers: {
