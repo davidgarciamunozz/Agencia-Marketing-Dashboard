@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { connect } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import { get_author_blog_list, get_author_blog_list_page, get_blog, get_blog_by_new_slug } from "redux/actions/blog/blog";
+import { get_author_blog_list, get_author_blog_list_page, get_blog } from "redux/actions/blog/blog";
 import { get_categories } from "redux/actions/categories/categories";
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 import axios from "axios";
@@ -12,7 +12,6 @@ import axios from "axios";
 function EditPost ({
     post,
     get_blog,
-    get_blog_by_new_slug,
 }) {
 
     const params = useParams()
@@ -21,7 +20,7 @@ function EditPost ({
     useEffect(()=>{
         window.scrollTo(0,0)
         get_blog(slug)
-        get_blog_by_new_slug(new_slug)
+
         get_categories()
 
     },[])
@@ -74,7 +73,7 @@ function EditPost ({
                 console.log(res)
                 if(res.status === 200){
                     setLoading(false)
-                    setUpdateTitle(false)
+                    setUpdateSlug(false)
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
                     } else {
@@ -82,13 +81,13 @@ function EditPost ({
                     }
                 } else {
                     setLoading(false)
-                    setUpdateTitle(false)
+                    setUpdateSlug(false)
 
                 }
 
             } catch (err) {
                 setLoading(false)
-                setUpdateTitle(false)
+                setUpdateSlug(false)
                 alert('error')
             }
         }
@@ -396,5 +395,4 @@ const mapStateToProps = state => ({
 
 export default connect (mapStateToProps,{
     get_blog,
-    get_blog_by_new_slug
 }) (EditPost)
