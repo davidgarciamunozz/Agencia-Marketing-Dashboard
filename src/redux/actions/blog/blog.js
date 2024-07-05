@@ -19,8 +19,7 @@ export const get_author_blog_list = () => async dispatch => {
             'Authorization': `JWT ${localStorage.getItem('access')}`
         }
     };
-    console.log(config)
-
+    
     try {
         
         const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/blog/author_list`, config)

@@ -7,6 +7,7 @@ import { useParams } from "react-router-dom";
 import { get_author_blog_list, get_author_blog_list_page, get_blog } from "redux/actions/blog/blog";
 import { get_categories } from "redux/actions/categories/categories";
 import { PaperClipIcon } from '@heroicons/react/20/solid'
+import axios from "axios";
 
 function EditPost ({
     get_blog,
@@ -25,10 +26,60 @@ function EditPost ({
 
     //Crear una funcion para que al hacer click en uno de los botones de update, se imprima en consola un mensaje
     const [updateTitle, setUpdateTitle] = useState(false)
-     
-    if (updateTitle) {
-        console.log('Update title button clicked')
+
+    const [formData, setFormData] = useState({
+        title:'',
+    })
+
+    const {title} = formData
+
+    const onChange = (e) => {
+        setFormData({...formData, [e.target.name]: e.target.value})
     }
+
+    const [loading, setLoading] = useState(false)
+
+
+    const onSubmit = (e) => {
+        e.preventDefault()
+        
+        const config = {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `JWT ${localStorage.getItem('access')}`
+            }
+        };
+
+        const formData = new FormData()
+        formData.append('title', title)
+        formData.append('slug', slug)
+
+        const fetchData = async () => {
+        setLoading(true)
+        
+            try{
+                
+                const res = await axios.put (`${process.env.REACT_APP_API_URL}/api/blog/edit`, formData, config)
+                console.log(res)
+                if(res.status === 200){
+                    setLoading(false)
+                    setUpdateTitle(false)
+                    get_blog(slug)
+                } else {
+                    setLoading(false)
+                    setUpdateTitle(false)
+
+                }
+
+            } catch (err) {
+                setLoading(false)
+                setUpdateTitle(false)
+                alert('error')
+            }
+        }
+    fetchData()
+    }
+
 
     return (
         <Layout>
@@ -95,24 +146,54 @@ function EditPost ({
       <div className="mt-5 border-t border-gray-200 px-5">
             <dl className="divide-y divide-gray-200">
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Full name</dt>
-                <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <dt className="text-sm font-medium text-gray-500">Post title</dt>
+                <dd className="mt-1 flex justify-center items-center text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                     {
                         updateTitle ?
                         <>
-                        <input type="text" className="border border-gray-300 rounded-md" />
+                        <form onSubmit={e =>onSubmit(e)} className="flex w-full items-center">
+                        <span className="flex-grow">
+                                <input 
+                                value={title} 
+                                onChange={e => onChange(e)}
+                                name="title" 
+                                type="text" 
+                                className="w-full border border-gray-300 rounded-md" 
+                                required
+                                />
+                        </span>
+
+                        <div className="ml-4 flex flex-shrink-0 space-x-4">
+                                <button
+                                type="submit"
+                                className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Save
+                                </button>
+                                <span className="text-gray-300" aria-hidden="true">
+                                |
+                                </span>
+                                <div
+                                type="submit"
+                                onClick={()=>setUpdateTitle(false)}
+                                className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Cancel
+                                </div>
+                        </div>
+
+                        </form>
                         </>
                         :
                         <>
                         <span className="flex-grow">{post.title}</span>
                         <span className="ml-4 flex-shrink-0">
-                            <button
-                            type="button"
+                            <div
                             onClick={()=>setUpdateTitle(true)}
-                            className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
                             >
                             Update
-                            </button>
+                            </div>
                         </span>
                         </>
                     }
@@ -252,4 +333,4 @@ const mapStateToProps = state => ({
 
 export default connect (mapStateToProps,{
     get_blog
-}) (EditPost);
+}) (EditPost)
