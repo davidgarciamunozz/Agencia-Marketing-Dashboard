@@ -3,15 +3,20 @@ import Layout from "hocs/layout/Layout";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { connect } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { get_author_blog_list, get_author_blog_list_page, get_blog } from "redux/actions/blog/blog";
 import { get_categories } from "redux/actions/categories/categories";
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 import axios from "axios";
+import DOMPurify from 'dompurify'
+import {CKEditor} from '@ckeditor/ckeditor5-react'
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+
 
 function EditPost ({
     post,
     get_blog,
+    isAuthenticated
 }) {
 
     const params = useParams()
@@ -20,7 +25,6 @@ function EditPost ({
     useEffect(()=>{
         window.scrollTo(0,0)
         get_blog(slug)
-
         get_categories()
 
     },[])
@@ -28,15 +32,21 @@ function EditPost ({
     //Crear una funcion para que al hacer click en uno de los botones de update, se imprima en consola un mensaje
     const [updateTitle, setUpdateTitle] = useState(false)
     const [updateSlug, setUpdateSlug]=useState(false)
+    const [updateDescription, setUpdateDescription]=useState(false)
+    const [UpdateContent, setUpdateContent]=useState(false)
 
     const [formData, setFormData] = useState({
         title:'',
         new_slug:'',
+        description:'',
+        content:''
     })
 
     const {
         title,
-        new_slug
+        new_slug,
+        description,
+        content
     } = formData
 
     const onChange = (e) => {
@@ -63,6 +73,8 @@ function EditPost ({
         formData.append('title', title)
         formData.append('slug', slug)
         formData.append('new_slug', new_slug)
+        formData.append('description', description)
+        formData.append('content', content)
 
         const fetchData = async () => {
         setLoading(true)
@@ -72,26 +84,45 @@ function EditPost ({
                 const res = await axios.put (`${process.env.REACT_APP_API_URL}/api/blog/edit`, formData, config)
                 console.log(res)
                 if(res.status === 200){
-                    setLoading(false)
-                    setUpdateSlug(false)
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
                     } else {
-                        get_blog(slug)
+                        await get_blog(slug)
                     }
+                    setFormData({
+                        title:'',
+                        new_slug:'',
+                        description:'',
+                        content:''
+                    })
+                    setLoading(false)
+                    setUpdateTitle(false)
+                    setUpdateSlug(false)
+                    setUpdateDescription(false)
+                    setUpdateContent(false)
                 } else {
                     setLoading(false)
+                    setUpdateTitle(false)
                     setUpdateSlug(false)
+                    setUpdateDescription(false)
+                    setUpdateContent(false)
 
                 }
 
             } catch (err) {
                 setLoading(false)
+                setUpdateTitle(false)
                 setUpdateSlug(false)
+                setUpdateDescription(false)
+                setUpdateContent(false)
                 alert('error')
             }
         }
     fetchData()
+    }
+
+    if (isAuthenticated===false){
+        return <Navigate to="/" />
     }
 
 
@@ -120,15 +151,12 @@ function EditPost ({
                 <meta name="twitter:image" content="https://boomslag.com/images/boomslag-logo.png" />
          </Helmet>
          {
-            post ? 
+            post && isAuthenticated ? 
             <>
           
             
 
             {/* Edit post interface */}
-
-           
-
             <div className=" bg-white px-4 py-5 sm:px-6">
                 <div className="-ml-5 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
                     <div className="ml-4 mt-4">
@@ -162,8 +190,10 @@ function EditPost ({
             </div>
 
             
-      <div className="mt-5 border-t border-gray-200 px-5">
+            <div className="mt-5 border-t border-gray-200 px-5">
             <dl className="divide-y divide-gray-200">
+
+
             {/* Cambiar el titulo del post */}    
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
                 <dt className="text-sm font-medium text-gray-500">Title</dt>
@@ -275,22 +305,68 @@ function EditPost ({
                     }
                 </dd>
             </div>
+
+            {/* Cambiar la descripcion del post */}
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Email address</dt>
+                <dt className="text-sm font-medium text-gray-500">Description</dt>
                 <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span className="flex-grow">margotfoster@example.com</span>
-                <span className="ml-4 flex-shrink-0">
-                    <button
-                    type="button"
-                    className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                    Update
-                    </button>
-                </span>
+                {
+                      updateDescription ?
+                      <>
+                      <form onSubmit={e=>onSubmit(e)} className="flex w-full items-center">
+                      <span className="flex-grow">
+                              <textarea 
+                              rows={3}
+                              value={description} 
+                              onChange={e => onChange(e)}
+                              name="description" 
+                              type="text" 
+                              className="w-full border border-gray-300 rounded-md" 
+                              required
+                              />
+                      </span>
+
+                      <div className="ml-4 flex flex-shrink-0 space-x-4">
+                              <button
+                              type="submit"
+                              className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Save
+                              </button>
+                              <span className="text-gray-300" aria-hidden="true">
+                              |
+                              </span>
+                              <div
+                              type="submit"
+                              onClick={()=>setUpdateDescription(false)}
+                              className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Cancel
+                              </div>
+                      </div>
+
+                      </form>
+                      </>
+                      :
+                      <>
+                      <span className="flex-grow">{post.description}</span>
+                      <span className="ml-4 flex-shrink-0">
+                          <div
+                          onClick={()=>setUpdateDescription(true)}
+                          className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                          >
+                          Update
+                          </div>
+                      </span>
+                      </>
+                }
                 </dd>
             </div>
+
+
+            {/* Cambiar la imagen del post */}
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Salary expectation</dt>
+                <dt className="text-sm font-medium text-gray-500">Thumbnail</dt>
                 <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
                 <span className="flex-grow">$120,000</span>
                 <span className="ml-4 flex-shrink-0">
@@ -303,24 +379,67 @@ function EditPost ({
                 </span>
                 </dd>
             </div>
+
+
+            {/* Cambiar el contenido del post */}    
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">About</dt>
+                <dt className="text-sm font-medium text-gray-500">Content</dt>
                 <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span className="flex-grow">
-                    Fugiat ipsum ipsum deserunt culpa aute sint do nostrud anim incididunt cillum culpa consequat. Excepteur
-                    qui ipsum aliquip consequat sint. Sit id mollit nulla mollit nostrud in ea officia proident. Irure
-                    nostrud pariatur mollit ad adipisicing reprehenderit deserunt qui eu.
-                </span>
-                <span className="ml-4 flex-shrink-0">
-                    <button
-                    type="button"
-                    className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                    Update
-                    </button>
-                </span>
+                {
+                      UpdateContent ?
+                      <>
+                      <form onSubmit={e=>onSubmit(e)} className="flex w-full items-center">
+                      <span className="flex-grow">
+                              <CKEditor
+                                editor={ClassicEditor}
+                                data={content}
+                                onChange={(event, editor) => {
+                                    const data = editor.getData();
+                                    setFormData({...formData, content:data})
+                                }}
+                              />  
+                      </span>
+
+                      <div className="ml-4 flex flex-shrink-0 space-x-4">
+                              <button
+                              type="submit"
+                              className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Save
+                              </button>
+                              <span className="text-gray-300" aria-hidden="true">
+                              |
+                              </span>
+                              <div
+                              type="submit"
+                              onClick={()=>setUpdateContent(false)}
+                              className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Cancel
+                              </div>
+                      </div>
+
+                      </form>
+                      </>
+                      :
+                      <>
+                      <span className="flex-grow text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content)}} />
+                      <span className="ml-4 flex-shrink-0">
+                          <div
+                          onClick={()=>setUpdateContent(true)}
+                          className="cursor-pointer ml-6 rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                          >
+                          Update
+                          </div>
+                      </span>
+                      </>
+                }
                 </dd>
             </div>
+
+
+
+
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
                 <dt className="text-sm font-medium text-gray-500">Attachments</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
@@ -390,7 +509,8 @@ function EditPost ({
 }
 
 const mapStateToProps = state => ({
-    post:state.blog.post
+    post:state.blog.post,
+    isAuthenticated: state.auth.isAuthenticated
 });
 
 export default connect (mapStateToProps,{
