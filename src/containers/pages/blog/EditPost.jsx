@@ -1,6 +1,6 @@
 import BlogList from "components/blog/BlogList";
 import Layout from "hocs/layout/Layout";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { connect } from "react-redux";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -49,11 +49,39 @@ function EditPost ({
         content
     } = formData
 
+    useEffect(() => {
+        if (post) {
+            setFormData({
+                title: post.title,
+                new_slug: post.slug,
+                description: post.description,
+                content: post.content
+            });
+        }
+    }, [post]);
+
     const onChange = (e) => {
         setFormData({...formData, [e.target.name]: e.target.value})
     }
 
     const [loading, setLoading] = useState(false)
+    const [showFullContent, setShowFullContent] = useState(false);
+    const [showButton, setShowButton] = useState(false);
+    const contentRef = useRef(null);
+
+    const toggleContent = () => {
+        setShowFullContent(!showFullContent);
+    };
+
+    useEffect(() => {
+        if (contentRef.current && post && post.content) {
+            if (contentRef.current.scrollHeight > contentRef.current.clientHeight) {
+                setShowButton(true);
+            } else {
+                setShowButton(false);
+            }
+        }
+    }, [post]);
 
     const navigate = useNavigate()
 
@@ -87,7 +115,7 @@ function EditPost ({
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
                     } else {
-                        await get_blog(slug)
+                        get_blog(slug)
                     }
                     setFormData({
                         title:'',
@@ -95,6 +123,7 @@ function EditPost ({
                         description:'',
                         content:''
                     })
+                    get_blog(slug)
                     setLoading(false)
                     setUpdateTitle(false)
                     setUpdateSlug(false)
@@ -204,7 +233,7 @@ function EditPost ({
                         <form onSubmit={e =>onSubmit(e)} className="flex w-full items-center">
                         <span className="flex-grow">
                                 <input 
-                                value={title} 
+                                value={formData.title}
                                 onChange={e => onChange(e)}
                                 name="title" 
                                 type="text" 
@@ -260,7 +289,7 @@ function EditPost ({
                         <form onSubmit={e=>onSubmit(e)} className="flex w-full items-center">
                         <span className="flex-grow">
                                 <input 
-                                value={new_slug} 
+                                value={formData.new_slug} 
                                 onChange={e => onChange(e)}
                                 name="new_slug" 
                                 type="text" 
@@ -317,7 +346,7 @@ function EditPost ({
                       <span className="flex-grow">
                               <textarea 
                               rows={3}
-                              value={description} 
+                              value={formData.description} 
                               onChange={e => onChange(e)}
                               name="description" 
                               type="text" 
@@ -392,7 +421,7 @@ function EditPost ({
                       <span className="flex-grow">
                               <CKEditor
                                 editor={ClassicEditor}
-                                data={content}
+                                data={formData.content}
                                 onChange={(event, editor) => {
                                     const data = editor.getData();
                                     setFormData({...formData, content:data})
@@ -423,7 +452,20 @@ function EditPost ({
                       </>
                       :
                       <>
-                      <span className="flex-grow text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content)}} />
+                     
+                      {/* <span className=" overflow-scroll h-56 flex-grow text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content)}} /> */}
+                      
+                      <div className="flex flex-col flex-grow">
+                            <div ref={contentRef} className={`overflow-y-auto ${showFullContent ? 'max-h-none' : 'max-h-56'}`}>
+                                <span className="text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                            </div>
+                            {showButton && (
+                                <button className="mt-2 text-blue-500" onClick={toggleContent}>
+                                    {showFullContent ? 'Show less' : 'Show more'}
+                                </button>
+                             )}
+                        </div>
+                
                       <span className="ml-4 flex-shrink-0">
                           <div
                           onClick={()=>setUpdateContent(true)}
