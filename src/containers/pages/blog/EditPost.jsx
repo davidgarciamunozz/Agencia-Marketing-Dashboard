@@ -73,6 +73,9 @@ function EditPost ({
     const [showFullContent, setShowFullContent] = useState(false);
     const [showButton, setShowButton] = useState(false);
     const contentRef = useRef(null);
+    const [previewImage, setPreviewImage] = useState();
+    const [thumbnail, setThumbnail] = useState(null);
+    
 
     const toggleContent = () => {
         setShowFullContent(!showFullContent);
@@ -89,6 +92,16 @@ function EditPost ({
     }, [post]);
 
     const navigate = useNavigate()
+
+    const fileSelectedHandler = (e) => {
+        const file = e.target.files[0]
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = (e) => {
+            setPreviewImage(reader.result)
+    };
+        setThumbnail(file)
+    }
 
 
     const onSubmit = (e) => {
@@ -109,6 +122,11 @@ function EditPost ({
         formData.append('description', description)
         formData.append('content', content)
         formData.append('category', category)
+        if (thumbnail){
+            formData.append('thumbnail', thumbnail, thumbnail.name)
+        } else {
+            formData.append('thumbnail', '')
+        }
 
         const fetchData = async () => {
         setLoading(true)
@@ -137,6 +155,10 @@ function EditPost ({
                     setUpdateContent(false)
                     setUpdateCategory(false)
                     setUpdateThumbnail(false)
+                    if (thumbnail){
+                        setThumbnail(null)
+                        setPreviewImage(null)
+                    }
                 } else {
                     setLoading(false)
                     setUpdateTitle(false)
@@ -145,6 +167,9 @@ function EditPost ({
                     setUpdateContent(false)
                     setUpdateCategory(false)
                     setUpdateThumbnail(false)
+                    if (thumbnail){
+                        setThumbnail(null)
+                    }
 
                 }
 
@@ -156,6 +181,9 @@ function EditPost ({
                 setUpdateContent(false)
                 setUpdateCategory(false)
                 setUpdateThumbnail(false)
+                if (thumbnail){
+                    setThumbnail(null)
+                }
                 alert('error')
             }
         }
@@ -358,9 +386,15 @@ function EditPost ({
                         <span className="flex-grow">
                                 <input 
                                 type="file" 
+                                name="thumbnail"
+                                onChange={e=>fileSelectedHandler(e)}
                                 className="py-2 px-3 w-3/4 border border-gray-300 rounded-md" 
                                 required
                                 />
+                                {
+                                    previewImage && 
+                                    <img src={previewImage} alt="thumbnail" className="w-96 h-56 object-cover my-4 rounded-sm" />
+                                }
                         </span>
 
                         <div className="ml-4 flex flex-shrink-0 space-x-4">
@@ -375,7 +409,11 @@ function EditPost ({
                                 </span>
                                 <div
                                 type="submit"
-                                onClick={()=>setUpdateThumbnail(false)}
+                                onClick={()=>{
+                                    setUpdateThumbnail(false);
+                                    setPreviewImage(null)
+                                }}
+                                    
                                 className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
                                 >
                                 Cancel
