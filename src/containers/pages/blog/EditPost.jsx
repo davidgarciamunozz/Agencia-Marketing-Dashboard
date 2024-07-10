@@ -16,7 +16,9 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 function EditPost ({
     post,
     get_blog,
-    isAuthenticated
+    isAuthenticated,
+    get_categories,
+    categories
 }) {
 
     const params = useParams()
@@ -25,28 +27,31 @@ function EditPost ({
     useEffect(()=>{
         window.scrollTo(0,0)
         get_blog(slug)
-        get_categories()
-
-    },[])
+        categories ? <></> : get_categories()
+    },[slug])
 
     //Crear una funcion para que al hacer click en uno de los botones de update, se imprima en consola un mensaje
     const [updateTitle, setUpdateTitle] = useState(false)
     const [updateSlug, setUpdateSlug]=useState(false)
     const [updateDescription, setUpdateDescription]=useState(false)
     const [UpdateContent, setUpdateContent]=useState(false)
+    const [updateCategory, setUpdateCategory]=useState(false)
+    const [updateThumbnail, setUpdateThumbnail]=useState(false)
 
     const [formData, setFormData] = useState({
         title:'',
         new_slug:'',
         description:'',
-        content:''
+        content:'',
+        category:''
     })
 
     const {
         title,
         new_slug,
         description,
-        content
+        content,
+        category
     } = formData
 
     useEffect(() => {
@@ -103,6 +108,7 @@ function EditPost ({
         formData.append('new_slug', new_slug)
         formData.append('description', description)
         formData.append('content', content)
+        formData.append('category', category)
 
         const fetchData = async () => {
         setLoading(true)
@@ -129,12 +135,16 @@ function EditPost ({
                     setUpdateSlug(false)
                     setUpdateDescription(false)
                     setUpdateContent(false)
+                    setUpdateCategory(false)
+                    setUpdateThumbnail(false)
                 } else {
                     setLoading(false)
                     setUpdateTitle(false)
                     setUpdateSlug(false)
                     setUpdateDescription(false)
                     setUpdateContent(false)
+                    setUpdateCategory(false)
+                    setUpdateThumbnail(false)
 
                 }
 
@@ -144,6 +154,8 @@ function EditPost ({
                 setUpdateSlug(false)
                 setUpdateDescription(false)
                 setUpdateContent(false)
+                setUpdateCategory(false)
+                setUpdateThumbnail(false)
                 alert('error')
             }
         }
@@ -335,6 +347,68 @@ function EditPost ({
                 </dd>
             </div>
 
+             {/* Cambiar la imagen del post */}
+             <div className="py-4 sm:flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
+                <dt className="text-sm font-medium text-gray-500">Thumbnail</dt>
+                <dd className="mt-1 flex justify-center items-center text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    {
+                        updateThumbnail ?
+                        <>
+                        <form onSubmit={e =>onSubmit(e)} className="flex w-full items-center">
+                        <span className="flex-grow">
+                                <input 
+                                type="file" 
+                                className="py-2 px-3 w-3/4 border border-gray-300 rounded-md" 
+                                required
+                                />
+                        </span>
+
+                        <div className="ml-4 flex flex-shrink-0 space-x-4">
+                                <button
+                                type="submit"
+                                className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Save
+                                </button>
+                                <span className="text-gray-300" aria-hidden="true">
+                                |
+                                </span>
+                                <div
+                                type="submit"
+                                onClick={()=>setUpdateThumbnail(false)}
+                                className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Cancel
+                                </div>
+                        </div>
+
+                        </form>
+                        </>
+                        :
+                        <>
+                        <span className="flex-grow">
+                        
+                                <input className="py-2 px-3 w-3/4 text-gray-500 border border-gray-300 rounded-md"
+                                value={post.thumbnail}
+                                readOnly
+                                disabled
+                                />
+                              
+                                
+                        </span>
+                        <span className="ml-4 flex-shrink-0">
+                            <div
+                            onClick={()=>setUpdateThumbnail(true)}
+                            className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                            >
+                            Update
+                            </div>
+                        </span>
+                        </>
+                    }
+                </dd>
+            </div>
+
             {/* Cambiar la descripcion del post */}
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
                 <dt className="text-sm font-medium text-gray-500">Description</dt>
@@ -392,24 +466,6 @@ function EditPost ({
                 </dd>
             </div>
 
-
-            {/* Cambiar la imagen del post */}
-            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
-                <dt className="text-sm font-medium text-gray-500">Thumbnail</dt>
-                <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                <span className="flex-grow">$120,000</span>
-                <span className="ml-4 flex-shrink-0">
-                    <button
-                    type="button"
-                    className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                    Update
-                    </button>
-                </span>
-                </dd>
-            </div>
-
-
             {/* Cambiar el contenido del post */}    
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
                 <dt className="text-sm font-medium text-gray-500">Content</dt>
@@ -460,7 +516,7 @@ function EditPost ({
                                 <span className="text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
                             </div>
                             {showButton && (
-                                <button className="mt-2 text-blue-500" onClick={toggleContent}>
+                                <button className=" text-left mt-2 text-blue-500" onClick={toggleContent}>
                                     {showFullContent ? 'Show less' : 'Show more'}
                                 </button>
                              )}
@@ -479,9 +535,117 @@ function EditPost ({
                 </dd>
             </div>
 
+            {/* Cambiar la categoria del post */}
+            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
+                <dt className="text-sm font-medium text-gray-500">Category</dt>
+                <dd className="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                {
+                      updateCategory ?
+                      <>
+                      <form onSubmit={e=>onSubmit(e)} className="flex w-full items-center">
+                      <span className="flex-grow">
+                      {
+                                        categories &&
+                                        categories !== null &&
+                                        categories !== undefined &&
+                                        categories.map(category=>{
+                                            if(category.sub_categories.length === 0){
+                                                return(
+                                                    <div key={category.id} className='flex items-center h-5'>
+                                                    <input
+                                                        onChange={e => onChange(e)}
+                                                        value={category.id.toString()}
+                                                        name='category'
+                                                        type='radio'
+                                                        required
+                                                        className='focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full'
+                                                    />
+                                                    <label className="ml-3 text-sm  text-gray-900 ">
+                                                        {category.name}
+                                                    </label>
+                                                    </div>
+                                                )
+                                            }else{
+
+                                                let result = []
+                                                result.push(
+                                                    <div key={category.id} className='flex items-center h-5 mt-2'>
+                                                    <input
+                                                        onChange={e => onChange(e)}
+                                                        value={category.id.toString()}
+                                                        name='category'
+                                                        type='radio'
+                                                        required
+                                                        className='focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full'
+                                                    />
+                                                    <label className="ml-3 text-sm  text-gray-900 font-semibold ">
+                                                        {category.name}
+                                                    </label>
+                                                    </div>
+                                                )
+
+                                                category.sub_categories.map(sub_category=>{
+                                                    result.push(
+                                                        <div key={sub_category.id} className='flex items-center h-5 ml-2 mt-1'>
+                                                        <input
+                                                            onChange={e => onChange(e)}
+                                                            value={sub_category.id.toString()}
+                                                            name='category'
+                                                            type='radio'
+                                                            className='focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded-full'
+                                                        />
+                                                        <label className="ml-3 text-sm text-gray-900 ">
+                                                            {sub_category.name}
+                                                        </label>
+                                                        </div>
+                                                    )
+                                                })
+                                                return result
+                                            }
+
+                                        })
+                                    }
+                      </span>
+
+                      <div className="ml-4 flex flex-shrink-0 space-x-4">
+                              <button
+                              type="submit"
+                              className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Save
+                              </button>
+                              <span className="text-gray-300" aria-hidden="true">
+                              |
+                              </span>
+                              <div
+                              type="submit"
+                              onClick={()=>setUpdateCategory(false)}
+                              className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                              >
+                              Cancel
+                              </div>
+                      </div>
+
+                      </form>
+                      </>
+                      :
+                      <>
+                      <span className="flex-grow">{post.category.name}</span>
+                      <span className="ml-4 flex-shrink-0">
+                          <div
+                          onClick={()=>setUpdateCategory(true)}
+                          className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                          >
+                          Update
+                          </div>
+                      </span>
+                      </>
+                }
+                </dd>
+            </div>
 
 
-
+            
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
                 <dt className="text-sm font-medium text-gray-500">Attachments</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
@@ -552,9 +716,11 @@ function EditPost ({
 
 const mapStateToProps = state => ({
     post:state.blog.post,
-    isAuthenticated: state.auth.isAuthenticated
+    isAuthenticated: state.auth.isAuthenticated,
+    categories: state.categories.categories
 });
 
 export default connect (mapStateToProps,{
     get_blog,
+    get_categories
 }) (EditPost)

@@ -21,8 +21,8 @@ function BlogCardHorizontal ({data,index}) {
                         <span className="  font-medium text-gray-500 text-sm mx-2">{moment(data.published).format('LL')}</span> &middot;
                         <span className="  font-medium text-gray-500 text-sm mx-2">{`${data.time_read} min read`}</span>
                         <p className="text-base mt-4 text-gray-600 leading-6 ">{data.description}</p>
+                        
                      </div>
-
                     </div>
                   </div>
                  
