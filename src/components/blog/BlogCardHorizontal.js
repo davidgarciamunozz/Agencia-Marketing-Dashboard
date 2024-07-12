@@ -17,6 +17,16 @@ function BlogCardHorizontal ({data,index}) {
                      <p id={`title`+data.id} className="text-2xl lg:absolute lg:top-4 pb-2 font-bold text-gray-900 hover:text-orange-600 transition duration-300 ease-in-out">{data.title.length > 131 ? data.title.slice(0,130):data.title }</p>
 
                      <div className="lg:absolute lg:top-20"> 
+                      {
+                        data.status === 'published'?
+                        <>
+                        <span className=" rounded-full p-1 px-2 bg-green-200 text-green-700  mx-1 font-medium text-sm ">Published</span> <span className="text-gray-300">&middot;</span> 
+                        </>
+                        :
+                        <>
+                        <span className=" rounded-full p-1 px-2 bg-rose-200 text-rose-700  mx-1 font-mediu text-sm ">Draft</span> <span className="text-gray-300">&middot;</span> 
+                        </>
+                      }
                         <span className="hover:text-orange-600 transition duration-300 ease-in-out font-medium text-gray-500 text-sm "> <Link to={`/category/${data.category.slug}`}>{data.category.name}</Link></span> &middot;
                         <span className="  font-medium text-gray-500 text-sm mx-2">{moment(data.published).format('LL')}</span> &middot;
                         <span className="  font-medium text-gray-500 text-sm mx-2">{`${data.time_read} min read`}</span>
