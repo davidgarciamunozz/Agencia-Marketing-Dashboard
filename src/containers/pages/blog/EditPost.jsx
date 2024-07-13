@@ -770,14 +770,23 @@ function EditPost ({
                       <>
                       
                       <div className="flex flex-col flex-grow">
-                            <div ref={contentRef} className={`overflow-y-auto ${showFullContent ? 'max-h-none' : 'max-h-56'}`}>
-                                <span className="text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
-                            </div>
-                            {showButton && (
-                                <button className=" text-left mt-2 text-blue-500" onClick={toggleContent}>
-                                    {showFullContent ? 'Show less' : 'Show more'}
-                                </button>
-                             )}
+                            {
+                                post.content ? 
+                                <>
+                                <div ref={contentRef} className={`overflow-y-auto ${showFullContent ? 'max-h-none' : 'max-h-56'}`}>
+                                    <span className="text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+                                </div>
+                                {showButton && (
+                                    <button className=" text-left mt-2 text-blue-500" onClick={toggleContent}>
+                                        {showFullContent ? 'Show less' : 'Show more'}
+                                    </button>
+                                 )}
+                                </>
+                                :
+                                <p className="animate-pulse py-2 bg-gray-100 "></p>
+                            }
+
+
                         </div>
                 
                       <span className="ml-4 flex-shrink-0">
@@ -888,7 +897,14 @@ function EditPost ({
                       </>
                       :
                       <>
-                      <span className="flex-grow">{post.category.name}</span>
+                      <span className="flex-grow">
+                        {
+                            post.category ? 
+                            post.category.name
+                            :
+                            <p className="animate-pulse py-2 bg-gray-100"></p>
+                        }
+                        </span>
                       <span className="ml-4 flex-shrink-0">
                           <div
                           onClick={()=>setUpdateCategory(true)}
