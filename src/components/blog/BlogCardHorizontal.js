@@ -24,7 +24,7 @@ function BlogCardHorizontal ({data,index}) {
                         </>
                         :
                         <>
-                        <span className=" rounded-full p-1 px-2 bg-rose-200 text-rose-700  mx-1 font-mediu text-sm ">Draft</span> <span className="text-gray-300">&middot;</span> 
+                        <span className=" rounded-full p-1 px-2 bg-rose-200 text-rose-700  mx-1 font-medium text-sm ">Draft</span> <span className="text-gray-300">&middot;</span> 
                         </>
                       }
                         <span className="hover:text-orange-600 transition duration-300 ease-in-out font-medium text-gray-500 text-sm "> <Link to={`/category/${data.category.slug}`}>{data.category.name}</Link></span> &middot;

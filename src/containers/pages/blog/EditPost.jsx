@@ -24,6 +24,7 @@ function EditPost ({
 }) {
 
     const [open, setOpen] = useState(false)
+    const [openDelete, setOpenDelete] = useState(false)
 
     const params = useParams()
     const slug = params.slug
@@ -138,7 +139,6 @@ function EditPost ({
             try{
                 
                 const res = await axios.put (`${process.env.REACT_APP_API_URL}/api/blog/edit`, formData, config)
-                console.log(res)
                 if(res.status === 200){
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
@@ -214,8 +214,9 @@ function EditPost ({
             try{
                 
                 const res = await axios.put (`${process.env.REACT_APP_API_URL}/api/blog/draft`, formData, config)
-                console.log(res)
+                
                 if(res.status === 200){
+                    setOpen(false)
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
                     } else {
@@ -240,6 +241,7 @@ function EditPost ({
                         setPreviewImage(null)
                     }
                 } else {
+                    setOpen(false)
                     setLoading(false)
                     setUpdateTitle(false)
                     setUpdateSlug(false)
@@ -254,6 +256,7 @@ function EditPost ({
                 }
 
             } catch (err) {
+                setOpen(false)
                 setLoading(false)
                 setUpdateTitle(false)
                 setUpdateSlug(false)
@@ -290,8 +293,9 @@ function EditPost ({
             try{
                 
                 const res = await axios.put (`${process.env.REACT_APP_API_URL}/api/blog/publish`, formData, config)
-                console.log(res)
+                
                 if(res.status === 200){
+                    setOpen(false)
                     if(new_slug!==''){
                         navigate(`/blog/${new_slug}`)
                     } else {
@@ -316,6 +320,7 @@ function EditPost ({
                         setPreviewImage(null)
                     }
                 } else {
+                    setOpen(false)
                     setLoading(false)
                     setUpdateTitle(false)
                     setUpdateSlug(false)
@@ -330,6 +335,63 @@ function EditPost ({
                 }
 
             } catch (err) {
+                setOpen(false)
+                setLoading(false)
+                setUpdateTitle(false)
+                setUpdateSlug(false)
+                setUpdateDescription(false)
+                setUpdateContent(false)
+                setUpdateCategory(false)
+                setUpdateThumbnail(false)
+                if (thumbnail){
+                    setThumbnail(null)
+                }
+                alert('error')
+            }
+        }
+    fetchData()
+    }
+
+    const onSubmitDelete = (e) => {
+        e.preventDefault()
+        
+        const config = {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `JWT ${localStorage.getItem('access')}`
+            }
+        };
+
+        const formData = new FormData()
+        formData.append('slug', slug)
+
+        
+        const fetchData = async () => {
+        setLoading(true)
+        
+            try{
+                
+                const res = await axios.delete(`${process.env.REACT_APP_API_URL}/api/blog/delete/${slug}`, formData, config)
+                
+                if(res.status === 200){
+                   navigate(-1)
+                } else {
+                    setOpenDelete(false)
+                    setLoading(false)
+                    setUpdateTitle(false)
+                    setUpdateSlug(false)
+                    setUpdateDescription(false)
+                    setUpdateContent(false)
+                    setUpdateCategory(false)
+                    setUpdateThumbnail(false)
+                    if (thumbnail){
+                        setThumbnail(null)
+                    }
+
+                }
+
+            } catch (err) {
+                setOpenDelete(false)
                 setLoading(false)
                 setUpdateTitle(false)
                 setUpdateSlug(false)
@@ -393,26 +455,30 @@ function EditPost ({
                     
                     <div className="ml-4 mt-4 flex-shrink-0">
                     <button
-                        type="button"
+                        onClick={e=>setOpenDelete(true)}
                         className="relative mx-1 inline-flex items-center rounded-md border border-transparent bg-rose-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
                     >
                         Delete post
                     </button>
-                    <button
-                        type="button"
+                    <a
+                        href={`${process.env.REACT_APP_URL}/blog/${post.slug}`}
                         className="relative mx-1 inline-flex items-center rounded-md border border-transparent bg-orange-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                     >
                         View post
-                    </button>
+                    </a>
                     <button
                         onClick={e=>setOpen(true)}
                         className="relative mx-1 inline-flex items-center rounded-md border border-transparent bg-green-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                     >
-                        Publish
+                        {
+                            post.get_status === 'published'?
+                            <> Draft </> :  <> Publish </>
+                        }
                     </button>
                     </div>
                 </div>
             </div>
+            
 
             
             <div className="mt-5 border-t border-gray-200 px-5">
@@ -895,6 +961,9 @@ function EditPost ({
             </div>
             </dl>
       </div>
+      {
+        console.log(post.get_status)
+      }
 
             <Transition.Root show={open} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={setOpen}>
@@ -934,10 +1003,14 @@ function EditPost ({
                             <div className="mt-3 text-center sm:mt-5">
                                 <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                                 {
-                                    post.status = 'published' ?
+                                    post.get_status === 'published' ?
+                                    <>
                                     <span>Draft this post?</span>
+                                    </>
                                     :
+                                    <>
                                     <span>Publish this post?</span>
+                                    </>
                                 }
                                 </Dialog.Title>
                                 <div className="mt-2">
@@ -958,8 +1031,9 @@ function EditPost ({
                                  <>
                                  
                                      {
-                                         post.status = 'published' ?
-                                         <form onSubmit={e=>onSubmitDraft(e)} className="mt-5 sm:mt-6">
+                                         post.get_status === 'published' ?
+                                         <>
+                                          <form onSubmit={e=>onSubmitDraft(e)} className="mt-5 sm:mt-6">
                                                  <button
                                                      type="submit"
                                                      className="inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-sm"
@@ -967,9 +1041,9 @@ function EditPost ({
                                                  >
                                                          <span>Draft</span>
                                                  </button>
-                                                 :
-                                                 <></>
                                          </form>
+                                         </>
+                                        
                                          :
                                          <form onSubmit={e=>onSubmitPublish(e)} className="mt-5 sm:mt-6">
                                                  <button
@@ -979,12 +1053,65 @@ function EditPost ({
                                                  >
                                                          <span>Publish</span>
                                                  </button>
-                                                 :
-                                                 <></>
                                          </form>
                                      }
                                  </>
                             }
+                        </Dialog.Panel>
+                        </Transition.Child>
+                    </div>
+                    </div>
+                </Dialog>
+            </Transition.Root>
+
+            <Transition.Root show={openDelete} as={Fragment}>
+                <Dialog as="div" className="relative z-10" onClose={setOpenDelete}>
+                    <Transition.Child
+                    as={Fragment}
+                    enter="ease-out duration-300"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-in duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                    >
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 z-10 overflow-y-auto">
+                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        enterTo="opacity-100 translate-y-0 sm:scale-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                        leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        >
+                        <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+                            <div>
+                            <div className="mt-3 text-center sm:mt-5">
+                                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                                <span>Delete Post</span>
+                                </Dialog.Title>
+                                <div className="mt-2">
+                                
+                                    <p className="text-sm text-gray-500">
+                                        Are you sure you wish to delete this post?
+                                    </p>
+                                </div>
+                            </div>
+                            </div>
+                            <form onSubmit={e=>onSubmitDelete(e)} className="mt-5 sm:mt-6">
+                                    <button
+                                        type="submit"
+                                        className="inline-flex w-full justify-center rounded-md border border-transparent bg-rose-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 sm:text-sm"
+                                        
+                                    >
+                                            <span>Delete</span>
+                                    </button>
+                            </form>
                         </Dialog.Panel>
                         </Transition.Child>
                     </div>
