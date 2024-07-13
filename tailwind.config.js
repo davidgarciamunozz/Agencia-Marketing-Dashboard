@@ -5,6 +5,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      keyframes : {
+        pulse : {
+          '30%' : {opacity: 0.3},
+        }
+      },
       colors:{
         "orange-button":"#FF561E",
       },

@@ -768,8 +768,6 @@ function EditPost ({
                       </>
                       :
                       <>
-                     
-                      {/* <span className=" overflow-scroll h-56 flex-grow text-justify prose-base text-sm" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content)}} /> */}
                       
                       <div className="flex flex-col flex-grow">
                             <div ref={contentRef} className={`overflow-y-auto ${showFullContent ? 'max-h-none' : 'max-h-56'}`}>
