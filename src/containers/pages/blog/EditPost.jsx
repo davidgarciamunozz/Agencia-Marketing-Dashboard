@@ -42,13 +42,15 @@ function EditPost ({
     const [UpdateContent, setUpdateContent]=useState(false)
     const [updateCategory, setUpdateCategory]=useState(false)
     const [updateThumbnail, setUpdateThumbnail]=useState(false)
+    const [updateTime, setUpdateTime]=useState('')
 
     const [formData, setFormData] = useState({
         title:'',
         new_slug:'',
         description:'',
         content:'',
-        category:''
+        category:'',
+        time_read:''
     })
 
     const {
@@ -56,7 +58,8 @@ function EditPost ({
         new_slug,
         description,
         content,
-        category
+        category,
+        time_read
     } = formData
 
     useEffect(() => {
@@ -65,7 +68,8 @@ function EditPost ({
                 title: post.title,
                 new_slug: post.slug,
                 description: post.description,
-                content: post.content
+                content: post.content,
+                time_read: post.time_read
             });
         }
     }, [post]);
@@ -108,6 +112,16 @@ function EditPost ({
         setThumbnail(file)
     }
 
+    const resetStates = () => {
+        setUpdateTitle(false)
+        setUpdateSlug(false)
+        setUpdateDescription(false)
+        setUpdateContent(false)
+        setUpdateCategory(false)
+        setUpdateThumbnail(false)
+        setUpdateTime(false)
+    };
+
 
     const onSubmit = (e) => {
         e.preventDefault()
@@ -127,6 +141,7 @@ function EditPost ({
         formData.append('description', description)
         formData.append('content', content)
         formData.append('category', category)
+        formData.append('time_read', time_read)
         if (thumbnail){
             formData.append('thumbnail', thumbnail, thumbnail.name)
         } else {
@@ -149,28 +164,19 @@ function EditPost ({
                         title:'',
                         new_slug:'',
                         description:'',
-                        content:''
+                        content:'',
+                        time_read:''
                     })
                     get_blog(slug)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                         setPreviewImage(null)
                     }
                 } else {
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                     }
@@ -179,12 +185,7 @@ function EditPost ({
 
             } catch (err) {
                 setLoading(false)
-                setUpdateTitle(false)
-                setUpdateSlug(false)
-                setUpdateDescription(false)
-                setUpdateContent(false)
-                setUpdateCategory(false)
-                setUpdateThumbnail(false)
+                resetStates()
                 if (thumbnail){
                     setThumbnail(null)
                 }
@@ -230,12 +231,7 @@ function EditPost ({
                     })
                     get_blog(slug)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                         setPreviewImage(null)
@@ -243,12 +239,7 @@ function EditPost ({
                 } else {
                     setOpen(false)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                     }
@@ -258,12 +249,7 @@ function EditPost ({
             } catch (err) {
                 setOpen(false)
                 setLoading(false)
-                setUpdateTitle(false)
-                setUpdateSlug(false)
-                setUpdateDescription(false)
-                setUpdateContent(false)
-                setUpdateCategory(false)
-                setUpdateThumbnail(false)
+                resetStates()
                 if (thumbnail){
                     setThumbnail(null)
                 }
@@ -309,12 +295,7 @@ function EditPost ({
                     })
                     get_blog(slug)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                         setPreviewImage(null)
@@ -322,12 +303,7 @@ function EditPost ({
                 } else {
                     setOpen(false)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                     }
@@ -337,12 +313,7 @@ function EditPost ({
             } catch (err) {
                 setOpen(false)
                 setLoading(false)
-                setUpdateTitle(false)
-                setUpdateSlug(false)
-                setUpdateDescription(false)
-                setUpdateContent(false)
-                setUpdateCategory(false)
-                setUpdateThumbnail(false)
+                resetStates()
                 if (thumbnail){
                     setThumbnail(null)
                 }
@@ -378,12 +349,7 @@ function EditPost ({
                 } else {
                     setOpenDelete(false)
                     setLoading(false)
-                    setUpdateTitle(false)
-                    setUpdateSlug(false)
-                    setUpdateDescription(false)
-                    setUpdateContent(false)
-                    setUpdateCategory(false)
-                    setUpdateThumbnail(false)
+                    resetStates()
                     if (thumbnail){
                         setThumbnail(null)
                     }
@@ -393,12 +359,7 @@ function EditPost ({
             } catch (err) {
                 setOpenDelete(false)
                 setLoading(false)
-                setUpdateTitle(false)
-                setUpdateSlug(false)
-                setUpdateDescription(false)
-                setUpdateContent(false)
-                setUpdateCategory(false)
-                setUpdateThumbnail(false)
+                resetStates()
                 if (thumbnail){
                     setThumbnail(null)
                 }
@@ -918,6 +879,62 @@ function EditPost ({
                 </dd>
             </div>
 
+            {/* Cambiar el tiempo de lectura del post */}  
+             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
+                <dt className="text-sm font-medium text-gray-500">Time read</dt>
+                <dd className="mt-1 flex justify-center items-center text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                    {
+                        updateTime ?
+                        <>
+                        <form onSubmit={e =>onSubmit(e)} className="flex w-full items-center">
+                        <span className="flex-grow">
+                                <input 
+                                value={formData.time_read}
+                                onChange={e => onChange(e)}
+                                name="time_read" 
+                                type="number" 
+                                className="w-full border border-gray-300 rounded-md" 
+                                required
+                                />
+                        </span>
+
+                        <div className="ml-4 flex flex-shrink-0 space-x-4">
+                                <button
+                                type="submit"
+                                className="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Save
+                                </button>
+                                <span className="text-gray-300" aria-hidden="true">
+                                |
+                                </span>
+                                <div
+                                type="submit"
+                                onClick={()=>setUpdateTime(false)}
+                                className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                                >
+                                Cancel
+                                </div>
+                        </div>
+
+                        </form>
+                        </>
+                        :
+                        <>
+                        <span className="flex-grow">{`${post.time_read} min`}</span>
+                        <span className="ml-4 flex-shrink-0">
+                            <div
+                            onClick={()=>setUpdateTime(true)}
+                            className="cursor-pointer rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 "
+                            >
+                            Update
+                            </div>
+                        </span>
+                        </>
+                    }
+                </dd>
+            </div>
+
 
             
             <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
@@ -975,9 +992,6 @@ function EditPost ({
             </div>
             </dl>
       </div>
-      {
-        console.log(post.get_status)
-      }
 
             <Transition.Root show={open} as={Fragment}>
                 <Dialog as="div" className="relative z-10" onClose={setOpen}>
